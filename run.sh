@@ -1,9 +1,8 @@
 module="GetSum"
-name="prefill"
 
 #cobc -m $module.cbl
-cobc -x -o $name.exe $name.cbl
-./$name.exe
+cobc -x -o test.exe $1
+./test.exe
 
 mv *.exe temp/
 

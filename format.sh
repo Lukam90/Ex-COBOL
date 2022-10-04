@@ -1,0 +1,1 @@
+python uppercase.py $1
