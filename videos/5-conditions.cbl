@@ -1,5 +1,5 @@
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. 5-data-class.
+       PROGRAM-ID. 5-conditions.
        AUTHOR. Lucien HAMM.
 
        ENVIRONMENT DIVISION.
