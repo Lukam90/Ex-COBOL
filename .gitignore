@@ -1,4 +1,7 @@
+*.dat
 *.exe
+*.rpt
 *.so
+*.tmp
 
 temp/
