@@ -583,7 +583,7 @@ end-if.
 
 ## Ajout d'un compte
 
-```sql
+```cbl
 exec sql
     INSERT INTO Compte
         (CodeBanque
@@ -608,7 +608,7 @@ end-exec.
 
 ## Déclaration du curseur (Init)
 
-```sql
+```cbl
 exec sql
     declare C-ListeBanque cursor for
         select CodeBanque, NomBanque
@@ -619,7 +619,7 @@ end-exec.
 
 ## Ouverture du curseur (Init)
 
-```sql
+```cbl
 exec sql
     open C-ListeBanque
 end-exec.

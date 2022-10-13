@@ -139,6 +139,21 @@
        77 TotalCalcule Pic 9(13).
        77 CleRibTrouve Pic XX.
 
+      * Déclarations des variables pour la gestion des clients
+       77 NomSelectionne Pic X(25).
+       77 RechercheCompteClientEof Pic 9.
+       77 NoLigneCompte Pic 99.
+       77 NoLigneCompteAux Pic 99.
+       77 MaxCompte Pic 99.
+       77 MaxSupprime Pic 99.
+       77 NoLigneEcran Pic 99.
+       77 MaxLigne Pic 99.
+       77 DimTableau pic 99 value 11.
+       77 NoLigneTitre Pic 99 value 8.
+       77 CEstBon pic 9.
+       77 Valeur Pic X(30).
+       77 NbLigneTrouve Pic 99. 
+
       * D�clarations li�es au contr�le de la pagination
 
        77 NbLigne pic 99.
@@ -203,6 +218,72 @@
          from CodeBanque of Banque.
          05 line NoLigneBanque col 8 pic X(72)
          from NomBanque of Banque.
+
+      **********************************************************************
+      * Ecrans pour la mise à jour des clients
+      **********************************************************************
+
+       01 M-GestionClient background-color is CouleurFondEcran foreground-color 
+         10 line 1 col 1 blank screen.
+         10 Line 3 Col 31 value "Gestion des clients".
+         10 Line 5 Col 1 Value " Nom ........... :".
+         10 Line 5 Col 46 Value " Prenom ... :".
+         10 Line 6 Col 1 Value " Code postal ... :".
+         10 Line 6 Col 46 Value " Ville .... :".
+         10 background-color is CouleurCaractere foreground-color is CouleurFond
+           20 Line 8 Col 1 pic x(80).
+           20 Line 8 Col 1 value "No".
+           20 Line 8 Col 4 value "Banque".
+           20 Line 8 Col 30 value "Guichet".
+           20 Line 8 Col 38 value "Compte".
+           20 Line 8 Col 51 value "Cle".
+           20 Line 8 Col 56 value "Debit".
+           20 Line 8 Col 68 value "Credit".
+
+       01 M-GestionClient-E background-color is CouleurFondEcran foreground-colo
+         10 Line 5 Col 20 using Nom of Client pic X(20).
+         10 Line 5 Col 60 using Prenom of Client pic X(20).
+         10 Line 6 Col 20 using CodePostal of Client.
+         10 Line 6 Col 60 using Ville of Client pic X(20).
+
+       01 M-GestionClient-L background-color is CouleurFondEcran foreground-colo
+         20 Line NoLigneEcran Col 1 from NoLigneCompte.
+         20 Line NoLigneEcran Col 4 using CodeBanque of ValeurLigne of LigneComp
+         20 Line NoLigneEcran Col 10 pic x(19) from NomBanque of ValeurLigne of 
+         20 Line NoLigneEcran Col 30 using CodeGuichet of ValeurLigne of LigneCo
+         20 Line NoLigneEcran Col 38 using RacineCompte of ValeurLigne of LigneC
+         20 Line NoLigneEcran Col 48 using TypeCompte of ValeurLigne of LigneCom
+         20 Line NoLigneEcran Col 51 from CleRib of LigneCompte(NoLigneCompte).
+           20 Line NoLigneEcran Col 54 pic Z(8)9V,99 using Debit of LigneCompte(
+           20 Line NoLigneEcran Col 67 pic Z(8)9V,99 using Credit of LigneCompte
+
+       01 M-GestionClient-QC background-color is CouleurFondEcran foreground-col
+         10 line 1 col 1 erase EOL.
+         10 line 1 col 1 value " Voulez-vous le creer (o/N) :" background-color 
+
+       01 M-GestionClient-QM background-color is CouleurFondEcran foreground-col
+         10 line 1 col 1 erase EOL.
+         10 line 1 col 1 value " Voulez-vous terminer, le modifier ou le supprim
+
+       01 M-EffaceQuestion Background-Color is CouleurFondEcran.
+         10 line 1 col 1 pic x(80).
+
+       01 M-EffaceMessage Background-Color is CouleurFondEcran.
+         10 line 25 col 1 pic x(80).
+
+       01 M-EffaceLigne Background-Color is CouleurFondEcran.
+         10 line NoLigneEcran col 1 pic x(80).
+
+       01 M-GestionClient-Menu background-color is CouleurFondEcran foreground-c
+         10 line 20 col 1 erase EOS.
+         10 line 20 col 1 pic x(80) value all "_".
+         10 line 21 col 1 value "-1-Ajout d'un compte ...............:" foregrou
+         10 line 22 col 1 value "-2-Modification compte, ligne No    :" foregrou
+         10 line 23 col 1 value "-3-Suppression compte, ligne No    .:" foregrou
+         10 line 21 col 39 value "-4-Modification de l'entete :".
+         10 line 22 col 39 value "-A-Annulation ............. :".
+         10 line 23 col 39 value "-V-Validation ............. :" foreground-colo
+         10 line 23 col 69 value "Option :".
 
        procedure division.
       ************************************************************
@@ -757,15 +838,187 @@
              close C-VueCompteClient
            end-exec.
 
-      * --- Afficher compte ---
+      * --- Traitement d'une ligne de compte ---
 
-       AfficherCompte.
+       TraitementCompte.
+      * Alimentation d'un tableau des lignes 
+           add 1 to NoLigneCompte.
 
-       AfficherCompte-Init.
+           move NoLigneCompte to MaxCompte.
 
-       AfficherCompte-Trt.
+           move corresponding LigneCourante 
+           to LigneCompte(NoLigneCompte).
+           move corresponding LigneCourante to CleBase
+           of LigneCompte(NoLigneCompte).
+           move corresponding LigneCourante to ValeurLigne 
+           of LigneCompte(NoLigneCompte).
 
-       AfficherCompte-Fin.
+      * Sur la premiere ligne on affiche l'entete de l'écran
+           if NoLigneCompte = 1 then
+               display M-GestionClient-E
+           end-if.
+
+      * Affichage de la ligne à l'écran
+           add 1 to NoLigneEcran.
+           
+           move NoLigneEcran to MaxLigne.
+           
+           display M-GestionClient-L.
+
+      * --- Sélection du traitement ---
+
+      * S'il n'y a pas de compte on propose à l'utilisateur de 
+      * renseigner les données du client
+
+           if MaxCompte = 0 then
+               display M-GestionClient-QC
+               
+               move "N" to ChoixGestionClient
+               
+               accept ChoixGestionClient line 1 col 31
+               
+               if ChoixGestionClient = "o" then
+                   move "O" to ChoixGestionClient
+               end-if
+           else
+               display M-GestionClient-QM
+               
+               move "T" to ChoixGestionClient
+               
+               accept ChoixGestionClient line 1 col 62
+               
+               if ChoixGestionClient = "m" then
+                   move "M" to ChoixGestionClient
+               end-if
+
+               if ChoixGestionClient = "s" then
+                   move "S" to ChoixGestionClient
+               end-if
+           end-if.
+
+           display M-EffaceQuestion.
+
+           evaluate ChoixGestionClient
+               when "O"
+                   move NomSelectionne to Nom of CLIENT
+
+                   exec sql
+                       select newid() into :Client.CodeClient
+                   end-exec
+                   
+                   perform MajInfoClient
+
+               when "M"
+                   perform MajInfoClient
+               when "S"
+                   perform SuppressionClient
+           end-evaluate.
+
+      * --- MAJ des informations du client ---
+
+       MajInfoClient.
+           perform MajInfoClient-init.
+           perform MajInfoClient-trt 
+           until OptionMaj = "V" or OptionMaj = "A".
+           perform MajInfoClient-Fin.
+
+       MajInfoClient-Init.
+           move " " to OptionMaj.
+
+       MajInfoClient-Trt.
+      * Initialisation de l'affichage des options de menu
+
+           if MaxCompte = 0 then
+               move CouleurFondEcran to ModificationForeGround
+               move CouleurFondEcran to ValidationForeGround
+           else
+               move CouleurCaractere to ModificationForeGround
+               move CouleurCaractere to ValidationForeGround
+           end-if.
+
+           if MaxCompte < 2 then
+               move CouleurFondEcran to SuppressionForeGround
+           else
+               move CouleurCaractere to SuppressionForeGround
+           end-if.
+
+           if MaxCompte = DimTableau then
+               move CouleurFondEcran to CreationForeGround
+           else
+               move CouleurCaractere to CreationForeGround
+           end-if.
+
+      * Affichage du menu
+
+           display M-GestionClient-Menu.
+      
+      * Saisie de l'option de gestion
+      
+           move " " to OptionMaj.
+      
+           accept OptionMaj line 23 col 78.
+      
+           if OptionMaj = "a"
+               move "A" to OptionMaj.
+
+           if OptionMaj = "v"
+               move "V" to OptionMaj.
+
+           evaluate OptionMaj
+               when "1"
+                   perform AjoutLigne
+
+               when "2"
+                   perform ModificationLigne
+
+               when "3"
+                   move 0 to NoLigneCompte
+                   if MaxCompte > 0 then
+                       accept NoLigneCompte line 23 col 33
+
+                       if NoLigneCompte > 0 and 
+                       NoLigneCompte <= MaxCompte then
+                           perform SuppressionLigne
+                       end-if
+                   end-if
+
+               when "4"
+      *            perform MajEnteteClient
+
+               when "V"
+                   if MaxCompte > 0 then
+                       perform MajClientDatabase
+
+           end-evaluate.
+
+       MajInfoClient-Fin.
+           continue.
+
+      * --- Ajout d'un nouveau compte ---
+
+       AjoutLigne.
+      * On ne peut faire l'ajout que s'il y a moins de 11 lignes
+
+           if MaxCompte < 11 then
+
+      * Positionnement sur l'écran et il y aura une ligne de plus à l'écran
+
+              add 1 to MaxLigne
+   
+              move MaxLigne to NoligneEcran
+
+      * Positionnement dans le tableau et initialisation de la ligne
+      * Pour mémoire, c'est la ligne saisie
+
+              add 1 to MaxCompte
+         
+              move MaxCompte to NoLigneCompte
+         
+              initialize LigneCompte(NoLigneCompte)
+
+      * On va saisir la ligne
+               perform MiseAJourLigne
+           end-if.
 
       * --- Choix de l'option de traitement via les questions ---
 
@@ -779,15 +1032,7 @@
 
        SupprimerClient-Fin.
 
-      * --- Modifier le client ---
-
-       ModifierClient.
-
-       ModifierClient-Init.
-
-       ModifierClient-Trt.
-
-       ModifierClient-Fin.
+      
 
       * --- Alimenter la base de donn�es ---
 
